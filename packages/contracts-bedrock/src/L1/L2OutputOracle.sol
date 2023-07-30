@@ -2,6 +2,7 @@
 pragma solidity 0.8.15;
 
 import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import { ERC721 } from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import { Semver } from "../universal/Semver.sol";
 import { Types } from "../libraries/Types.sol";
 
@@ -10,7 +11,7 @@ import { Types } from "../libraries/Types.sol";
 /// @notice The L2OutputOracle contains an array of L2 state outputs, where each output is a
 ///         commitment to the state of the L2 chain. Other contracts like the OptimismPortal use
 ///         these outputs to verify information about the state of L2.
-contract L2OutputOracle is Initializable, Semver {
+contract L2OutputOracle is Initializable, ERC721, Semver {
     /// @notice The interval in L2 blocks at which checkpoints must be submitted.
     ///         Although this is immutable, it can safely be modified by upgrading the
     ///         implementation contract.
@@ -70,7 +71,7 @@ contract L2OutputOracle is Initializable, Semver {
         address _proposer,
         address _challenger,
         uint256 _finalizationPeriodSeconds
-    ) Semver(1, 3, 1) {
+    ) Semver(1, 3, 1) ERC721("MyToken", "MTK") {
         require(_l2BlockTime > 0, "L2OutputOracle: L2 block time must be greater than 0");
         require(
             _submissionInterval > 0,
