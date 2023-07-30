@@ -24,7 +24,7 @@ contract L2OutputOracle is Initializable, ERC721, Semver {
     address public immutable CHALLENGER;
 
     /// @notice The address of the proposer. Can be updated via upgrade.
-    address public immutable PROPOSER;
+    address public immutable GENESIS_PROPOSER;
 
     /// @notice The minimum time (in seconds) that must elapse before a withdrawal can be finalized.
     uint256 public immutable FINALIZATION_PERIOD_SECONDS;
@@ -80,7 +80,7 @@ contract L2OutputOracle is Initializable, ERC721, Semver {
 
         SUBMISSION_INTERVAL = _submissionInterval;
         L2_BLOCK_TIME = _l2BlockTime;
-        PROPOSER = _proposer;
+        GENESIS_PROPOSER = _proposer;
         CHALLENGER = _challenger;
         FINALIZATION_PERIOD_SECONDS = _finalizationPeriodSeconds;
 
@@ -150,7 +150,7 @@ contract L2OutputOracle is Initializable, ERC721, Semver {
         uint256 _l1BlockNumber
     ) external payable {
         require(
-            msg.sender == PROPOSER,
+            msg.sender == PROPOSER(),
             "L2OutputOracle: only the proposer address can propose new outputs"
         );
 
@@ -287,5 +287,19 @@ contract L2OutputOracle is Initializable, ERC721, Semver {
     /// @return L2 timestamp of the given block.
     function computeL2Timestamp(uint256 _l2BlockNumber) public view returns (uint256) {
         return startingTimestamp + ((_l2BlockNumber - startingBlockNumber) * L2_BLOCK_TIME);
+    }
+
+    function PROPOSER() public view returns (address) {
+        uint256 _l2BlockNumber = latestBlockNumber();
+
+        if (_exists(_l2BlockNumber)) {
+            return ownerOf(_l2BlockNumber);
+        } else {
+            return GENESIS_PROPOSER;
+        }
+    }
+
+    function _mintProposer(address _proposer, uint256 _l2BlockNumber) internal {
+        _mint(_proposer, _l2BlockNumber);
     }
 }
