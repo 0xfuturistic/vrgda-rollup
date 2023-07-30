@@ -3,6 +3,9 @@ pragma solidity 0.8.15;
 
 import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import { ERC721 } from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import { SafeTransferLib } from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
+import { toDaysWadUnsafe } from "@rari-capital/solmate/src/utils/SignedWadMath.sol";
+import { LinearVRGDA } from "@transmissions11/VRGDAs/LinearVRGDA.sol";
 import { Semver } from "../universal/Semver.sol";
 import { Types } from "../libraries/Types.sol";
 
@@ -11,7 +14,7 @@ import { Types } from "../libraries/Types.sol";
 /// @notice The L2OutputOracle contains an array of L2 state outputs, where each output is a
 ///         commitment to the state of the L2 chain. Other contracts like the OptimismPortal use
 ///         these outputs to verify information about the state of L2.
-contract L2OutputOracle is Initializable, ERC721, Semver {
+contract L2OutputOracle is Initializable, ERC721, LinearVRGDA, Semver {
     /// @notice The interval in L2 blocks at which checkpoints must be submitted.
     ///         Although this is immutable, it can safely be modified by upgrading the
     ///         implementation contract.
@@ -37,6 +40,9 @@ contract L2OutputOracle is Initializable, ERC721, Semver {
 
     /// @notice An array of L2 output proposals.
     Types.OutputProposal[] internal l2Outputs;
+
+    /// @notice The total number of tokens sold so far.
+    uint256 public totalSold;
 
     /// @notice Emitted when an output is proposed.
     /// @param outputRoot    The output root.
@@ -71,7 +77,10 @@ contract L2OutputOracle is Initializable, ERC721, Semver {
         address _proposer,
         address _challenger,
         uint256 _finalizationPeriodSeconds
-    ) Semver(1, 3, 1) ERC721("MyToken", "MTK") {
+    ) Semver(1, 3, 1) ERC721("MyToken", "MTK") LinearVRGDA(69.42e18, // Target price.
+                                                           0.31e18, // Price decay percent.
+                                                           2e18 // Per time unit.
+    ) {
         require(_l2BlockTime > 0, "L2OutputOracle: L2 block time must be greater than 0");
         require(
             _submissionInterval > 0,
@@ -299,7 +308,19 @@ contract L2OutputOracle is Initializable, ERC721, Semver {
         }
     }
 
-    function _mintProposer(address _proposer, uint256 _l2BlockNumber) internal {
-        _mint(_proposer, _l2BlockNumber);
+    function mintProposer() external payable returns (uint256 _l2BlockNumber) {
+        unchecked {
+            // Note: By using toDaysWadUnsafe(block.timestamp - startTime) we are establishing that 1 "unit of time" is 1 day.
+            uint256 price = getVRGDAPrice(toDaysWadUnsafe(block.timestamp - startingTimestamp), _l2BlockNumber = totalSold++);
+
+            require(msg.value >= price, "UNDERPAID"); // Don't allow underpaying.
+
+            _mint(msg.sender, _l2BlockNumber); // Mint the NFT using mintedId.
+
+            // Note: We do this at the end to avoid creating a reentrancy vector.
+            // Refund the user any ETH they spent over the current price of the NFT.
+            // Unchecked is safe here because we validate msg.value >= price above.
+            SafeTransferLib.safeTransferETH(msg.sender, msg.value - price);
+        }
     }
 }
