@@ -2,7 +2,7 @@
 pragma solidity 0.8.15;
 
 import { SignedMath } from "@openzeppelin/contracts/utils/math/SignedMath.sol";
-import { FixedPointMathLib } from "@rari-capital/solmate/src/utils/FixedPointMathLib.sol";
+import { wadPow } from "@rari-capital/solmate/src/utils/SignedWadMath.sol";
 
 /// @title Arithmetic
 /// @notice Even more math than before.
@@ -33,6 +33,6 @@ library Arithmetic {
     ) internal pure returns (int256) {
         return
             (_coefficient *
-                (FixedPointMathLib.powWad(1e18 - (1e18 / _denominator), _exponent * 1e18))) / 1e18;
+                (wadPow(1e18 - (1e18 / _denominator), _exponent * 1e18))) / 1e18;
     }
 }
