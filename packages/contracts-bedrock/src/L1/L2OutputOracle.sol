@@ -298,6 +298,9 @@ contract L2OutputOracle is Initializable, ERC721, LinearVRGDA, Semver {
         return startingTimestamp + ((_l2BlockNumber - startingBlockNumber) * L2_BLOCK_TIME);
     }
 
+
+    /// @notice Returns the owner of the token for the last proposer.
+    /// @return address of the owner of the token for the last proposer.
     function PROPOSER() public view returns (address) {
         uint256 _l2BlockNumber = latestBlockNumber();
 
@@ -308,6 +311,9 @@ contract L2OutputOracle is Initializable, ERC721, LinearVRGDA, Semver {
         }
     }
 
+    /// @notice Mints a token to the caller, which grants ownership over the rights to propose
+    ///         the block with _l2BlockNumber.
+    /// @return _l2BlockNumber block number of the proposed block.
     function mintProposer() external payable returns (uint256 _l2BlockNumber) {
         unchecked {
             // Note: By using toDaysWadUnsafe(block.timestamp - startTime) we are establishing that 1 "unit of time" is 1 day.
