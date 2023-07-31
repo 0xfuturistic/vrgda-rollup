@@ -19,3 +19,6 @@
 [submodule "packages/contracts-bedrock/lib/VRGDAs"]
 	path = packages/contracts-bedrock/lib/VRGDAs
 	url = https://github.com/transmissions11/VRGDAs
+[submodule "packages/contracts-bedrock/lib/tokenbound"]
+	path = packages/contracts-bedrock/lib/tokenbound
+	url = https://github.com/tokenbound/contracts
