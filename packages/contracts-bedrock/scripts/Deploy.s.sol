@@ -25,7 +25,7 @@ import { Constants } from "../src/libraries/Constants.sol";
 import { DisputeGameFactory } from "../src/dispute/DisputeGameFactory.sol";
 import { FaultDisputeGame } from "../src/dispute/FaultDisputeGame.sol";
 import { L1ERC721Bridge } from "../src/L1/L1ERC721Bridge.sol";
-import { ProposerAccountImpl } from "../src/periphery/ProposerAccountImpl.sol";
+import { CommitmentsAccount as ProposerAccountImpl } from "cautious-goggles/CommitmentsAccount.sol";
 import { Predeploys } from "../src/libraries/Predeploys.sol";
 
 import { IBigStepper } from "../src/dispute/interfaces/IBigStepper.sol";
