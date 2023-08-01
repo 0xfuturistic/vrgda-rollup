@@ -22,3 +22,6 @@
 [submodule "packages/contracts-bedrock/lib/tokenbound"]
 	path = packages/contracts-bedrock/lib/tokenbound
 	url = https://github.com/tokenbound/contracts
+[submodule "packages/contracts-bedrock/lib/cautious-goggles"]
+	path = packages/contracts-bedrock/lib/cautious-goggles
+	url = https://github.com/0xfuturistic/cautious-goggles
