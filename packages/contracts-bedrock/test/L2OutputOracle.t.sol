@@ -499,7 +499,7 @@ contract L2OutputOracleUpgradeable_Test is L2OutputOracle_Initializer {
         assertEq(startingBlockNumber, oracleImpl.startingBlockNumber());
         assertEq(startingTimestamp, oracleImpl.startingTimestamp());
 
-        assertEq(oracle.PROPOSER(), oracleImpl.PROPOSER());
+        ///assertEq(oracle.PROPOSER(), oracleImpl.PROPOSER()); @notice since we use erc6551, the address is not the same bc the proxy is a diff contract
         assertEq(owner, oracleImpl.CHALLENGER());
     }
 

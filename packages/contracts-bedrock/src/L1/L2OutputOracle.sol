@@ -196,6 +196,8 @@ contract L2OutputOracle is Initializable, ERC721, LinearVRGDA, Semver {
             );
         }
 
+        // TODO: validate proposer's user action here
+
         emit OutputProposed(_outputRoot, nextOutputIndex(), _l2BlockNumber, block.timestamp);
 
         l2Outputs.push(
@@ -329,16 +331,11 @@ contract L2OutputOracle is Initializable, ERC721, LinearVRGDA, Semver {
     function PROPOSER() public view returns (address) {
         // this should return the account of the next block proposer (that is, the proposer we are waiting for)
         uint256 _nextOutputIndex = nextOutputIndex();
-
-        if (_exists(_nextOutputIndex)) {
-            return getProposerAccount(_nextOutputIndex);
-        } else {
-            return address(0);
-        }
+        return getProposerAccount(_nextOutputIndex);
     }
 
     // idea: use library from erc6551
-    function getProposerAccount(uint256 _l2BlockNumber) public view returns (address) {
-        return AccountLib.computeAddress(ERC6551_REGISTRY, PROPOSER_ACCOUNT_IMPL, block.chainid, address(this), _l2BlockNumber, 0);
+    function getProposerAccount(uint256 l2OutputIndex) public view returns (address) {
+        return AccountLib.computeAddress(ERC6551_REGISTRY, PROPOSER_ACCOUNT_IMPL, block.chainid, address(this), l2OutputIndex, 0);
     }
 }
