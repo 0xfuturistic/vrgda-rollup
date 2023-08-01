@@ -25,3 +25,6 @@
 [submodule "packages/contracts-bedrock/lib/cautious-goggles"]
 	path = packages/contracts-bedrock/lib/cautious-goggles
 	url = https://github.com/0xfuturistic/cautious-goggles
+[submodule "packages/contracts-bedrock/lib/account-abstraction"]
+	path = packages/contracts-bedrock/lib/account-abstraction
+	url = https://github.com/eth-infinitism/account-abstraction
