@@ -5,7 +5,7 @@
 @tokenbound/=lib/tokenbound/
 @transmissions11/VRGDAs/=lib/VRGDAs/src/
 VRGDAs/=lib/VRGDAs/src/
-account-abstraction/=lib/tokenbound/lib/account-abstraction/contracts/
+account-abstraction/=lib/account-abstraction/contracts/
 cautious-goggles/=lib/cautious-goggles/src/
 clones-with-immutable-args/=lib/clones-with-immutable-args/src/
 ds-test/=lib/ds-test/src/
@@ -19,7 +19,6 @@ tokenbound/=lib/tokenbound/
 lib/VRGDAs:ds-test/=lib/VRGDAs/lib/ds-test/src/
 lib/VRGDAs:forge-std/=lib/VRGDAs/lib/forge-std/src/
 lib/VRGDAs:solmate/=lib/VRGDAs/lib/solmate/src/
-lib/cautious-goggles:openzeppelin-contracts/=lib/cautious-goggles/lib/openzeppelin-contracts/contracts/
 lib/clones-with-immutable-args:ds-test/=lib/clones-with-immutable-args/lib/ds-test/src/
 lib/forge-std:ds-test/=lib/forge-std/lib/ds-test/src/
 lib/solmate:ds-test/=lib/solmate/lib/ds-test/src/
