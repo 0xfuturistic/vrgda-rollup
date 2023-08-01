@@ -9,6 +9,8 @@ import { LinearVRGDA } from "@transmissions11/VRGDAs/LinearVRGDA.sol";
 import { Semver } from "../universal/Semver.sol";
 import { Types } from "../libraries/Types.sol";
 import {ERC6551AccountLib as AccountLib} from "tokenbound/lib/reference/src/lib/ERC6551AccountLib.sol";
+import { IAccount } from "account-abstraction/interfaces/IAccount.sol";
+import { UserOperation, UserOperationLib } from "account-abstraction/interfaces/UserOperation.sol";
 
 /// @custom:proxied
 /// @title L2OutputOracle
@@ -16,6 +18,8 @@ import {ERC6551AccountLib as AccountLib} from "tokenbound/lib/reference/src/lib/
 ///         commitment to the state of the L2 chain. Other contracts like the OptimismPortal use
 ///         these outputs to verify information about the state of L2.
 contract L2OutputOracle is Initializable, ERC721, LinearVRGDA, Semver {
+    using UserOperationLib for UserOperation;
+
     /// @notice The interval in L2 blocks at which checkpoints must be submitted.
     ///         Although this is immutable, it can safely be modified by upgrading the
     ///         implementation contract.
@@ -196,7 +200,29 @@ contract L2OutputOracle is Initializable, ERC721, LinearVRGDA, Semver {
             );
         }
 
-        // TODO: validate proposer's user action here
+        // Build the UserOperation for the proposer so we can validate it.
+        UserOperation memory _proposerOp = UserOperation({
+            sender: msg.sender,
+            nonce: 0,
+            initCode: abi.encodeWithSelector(
+                this.proposeL2Output.selector,
+                _outputRoot,
+                _l2BlockNumber,
+                _l1BlockHash,
+                _l1BlockNumber
+            ),
+            callData: abi.encodeWithSelector(this.proposeL2Output.selector),
+            callGasLimit: 0,
+            verificationGasLimit: 0,
+            preVerificationGas: 0,
+            maxFeePerGas: 0,
+            maxPriorityFeePerGas: 0,
+            paymasterAndData: abi.encodeWithSelector(this.proposeL2Output.selector),
+            signature: abi.encodeWithSelector(this.proposeL2Output.selector)
+        }); // TODO: fill values appropiately
+
+        // Validate the proposer's operation.
+        validateProposerOp(msg.sender, _proposerOp);
 
         emit OutputProposed(_outputRoot, nextOutputIndex(), _l2BlockNumber, block.timestamp);
 
@@ -337,5 +363,9 @@ contract L2OutputOracle is Initializable, ERC721, LinearVRGDA, Semver {
     // idea: use library from erc6551
     function getProposerAccount(uint256 l2OutputIndex) public view returns (address) {
         return AccountLib.computeAddress(ERC6551_REGISTRY, PROPOSER_ACCOUNT_IMPL, block.chainid, address(this), l2OutputIndex, 0);
+    }
+
+    function validateProposerOp(address proposer, UserOperation memory proposerOp) public returns (uint256 validationData) {
+        validationData = IAccount(proposer).validateUserOp(proposerOp, keccak256(abi.encode(proposerOp)), 0); // TODO: proper hash like in UserOperationLib
     }
 }
