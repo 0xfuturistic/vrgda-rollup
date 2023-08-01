@@ -99,7 +99,7 @@ contract L2OutputOracle_Initializer is CommonTest {
         L2ToL1MessagePasser(payable(Predeploys.L2_TO_L1_MESSAGE_PASSER));
 
     // Constructor arguments
-    address internal proposer = 0x000000000000000000000000000000000000AbBa;
+    address internal proposerMinter = 0x000000000000000000000000000000000000AbBa;
     address internal owner = 0x000000000000000000000000000000000000ACDC;
     uint256 internal submissionInterval = 1800;
     uint256 internal l2BlockTime = 2;
@@ -129,6 +129,11 @@ contract L2OutputOracle_Initializer is CommonTest {
         bytes32 proposedOutput2 = keccak256(abi.encode());
         uint256 nextBlockNumber = oracle.nextBlockNumber();
         uint256 nextOutputIndex = oracle.nextOutputIndex();
+
+        uint256 mintPrice = oracle.mintProposerPrice();
+        vm.prank(proposerMinter);
+        oracle.mintProposer{value:mintPrice}();
+
         warpToProposeTime(nextBlockNumber);
         uint256 proposedNumber = oracle.latestBlockNumber();
 
@@ -140,7 +145,7 @@ contract L2OutputOracle_Initializer is CommonTest {
         vm.expectEmit(true, true, true, true);
         emit OutputProposed(proposedOutput2, nextOutputIndex, nextBlockNumber, block.timestamp);
 
-        vm.prank(proposer);
+        vm.prank(oracle.PROPOSER());
         oracle.proposeL2Output(proposedOutput2, nextBlockNumber, 0, 0);
     }
 
@@ -159,12 +164,10 @@ contract L2OutputOracle_Initializer is CommonTest {
             _l2BlockTime: l2BlockTime,
             _startingBlockNumber: startingBlockNumber,
             _startingTimestamp: startingTimestamp,
-            _proposer: proposer,
             _challenger: owner,
             _finalizationPeriodSeconds: 7 days,
-            _erc6551Registry: address(0),
-            _proposerAccountImpl: address(0),
-            _chainId: block.chainid
+            _erc6551Registry: 0x02101dfB77FDE026414827Fdc604ddAF224F0921,
+            _proposerAccountImpl: 0x2D25602551487C3f3354dD80D76D54383A243358
         });
         Proxy proxy = new Proxy(multisig);
         vm.prank(multisig);
@@ -179,6 +182,9 @@ contract L2OutputOracle_Initializer is CommonTest {
         vm.etch(Predeploys.L2_TO_L1_MESSAGE_PASSER, address(new L2ToL1MessagePasser()).code);
 
         vm.label(Predeploys.L2_TO_L1_MESSAGE_PASSER, "L2ToL1MessagePasser");
+
+        // Give the proposerMinter some ETH
+        vm.deal(proposerMinter, 1e22);
     }
 }
 

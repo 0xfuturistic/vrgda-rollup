@@ -27,17 +27,12 @@ contract L2OutputOracle is Initializable, ERC721, LinearVRGDA, Semver {
     /// @notice The address of the challenger. Can be updated via upgrade.
     address public immutable CHALLENGER;
 
-    /// @notice The address of the proposer. Can be updated via upgrade.
-    address public immutable GENESIS_PROPOSER;
-
     /// @notice The minimum time (in seconds) that must elapse before a withdrawal can be finalized.
     uint256 public immutable FINALIZATION_PERIOD_SECONDS;
 
     address public immutable ERC6551_REGISTRY;
 
     address public immutable PROPOSER_ACCOUNT_IMPL;
-
-    uint256 public immutable CHAIN_ID;
 
     /// @notice The number of the first L2 block recorded in this contract.
     uint256 public startingBlockNumber;
@@ -74,19 +69,16 @@ contract L2OutputOracle is Initializable, ERC721, LinearVRGDA, Semver {
     /// @param _l2BlockTime         The time per L2 block, in seconds.
     /// @param _startingBlockNumber The number of the first L2 block.
     /// @param _startingTimestamp   The timestamp of the first L2 block.
-    /// @param _proposer            The address of the proposer.
     /// @param _challenger          The address of the challenger.
     constructor(
         uint256 _submissionInterval,
         uint256 _l2BlockTime,
         uint256 _startingBlockNumber,
         uint256 _startingTimestamp,
-        address _proposer,
         address _challenger,
         uint256 _finalizationPeriodSeconds,
         address _erc6551Registry,
-        address _proposerAccountImpl,
-        uint256 _chainId
+        address _proposerAccountImpl
     ) Semver(1, 3, 1) ERC721("MyToken", "MTK") LinearVRGDA(69.42e18, // Target price.
                                                            0.31e18, // Price decay percent.
                                                            2e18 // Per time unit.
@@ -99,12 +91,10 @@ contract L2OutputOracle is Initializable, ERC721, LinearVRGDA, Semver {
 
         SUBMISSION_INTERVAL = _submissionInterval;
         L2_BLOCK_TIME = _l2BlockTime;
-        GENESIS_PROPOSER = _proposer;
         CHALLENGER = _challenger;
         FINALIZATION_PERIOD_SECONDS = _finalizationPeriodSeconds;
         ERC6551_REGISTRY = _erc6551Registry;
         PROPOSER_ACCOUNT_IMPL = _proposerAccountImpl;
-        CHAIN_ID = _chainId;
 
         initialize(_startingBlockNumber, _startingTimestamp);
     }
@@ -207,8 +197,6 @@ contract L2OutputOracle is Initializable, ERC721, LinearVRGDA, Semver {
         }
 
         emit OutputProposed(_outputRoot, nextOutputIndex(), _l2BlockNumber, block.timestamp);
-
-        _burn(_l2BlockNumber);
 
         l2Outputs.push(
             Types.OutputProposal({
@@ -315,15 +303,15 @@ contract L2OutputOracle is Initializable, ERC721, LinearVRGDA, Semver {
 
     /// @notice Mints a token to the caller, which grants ownership over the rights to propose
     ///         the block with _l2BlockNumber.
-    /// @return l2BlockNumber block number of the proposed block.
-    function mintProposer() external payable returns (uint256 l2BlockNumber) {
+    /// @return mintedId block number of the proposed block.
+    function mintProposer() external payable returns (uint256 mintedId) {
         unchecked {
             // Note: By using toDaysWadUnsafe(block.timestamp - startTime) we are establishing that 1 "unit of time" is 1 day.
-            uint256 price = getVRGDAPrice(toDaysWadUnsafe(block.timestamp - startingTimestamp), l2BlockNumber = totalSold++);
+            uint256 price = getVRGDAPrice(toDaysWadUnsafe(block.timestamp - startingTimestamp), mintedId = totalSold++);
 
             require(msg.value >= price, "UNDERPAID"); // Don't allow underpaying.
 
-            _mint(msg.sender, l2BlockNumber); // Mint the NFT using mintedId.
+            _mint(msg.sender, mintedId); // Mint the NFT using mintedId.
 
             // Note: We do this at the end to avoid creating a reentrancy vector.
             // Refund the user any ETH they spent over the current price of the NFT.
@@ -332,14 +320,18 @@ contract L2OutputOracle is Initializable, ERC721, LinearVRGDA, Semver {
         }
     }
 
+    function mintProposerPrice() public view returns (uint256) {
+        return getVRGDAPrice(toDaysWadUnsafe(block.timestamp - startingTimestamp), totalSold + 1);
+    }
+
     /// @notice Returns the owner of the token for the last proposer.
     /// @return address of the owner of the token for the last proposer.
     function PROPOSER() public view returns (address) {
         // this should return the account of the next block proposer (that is, the proposer we are waiting for)
-        uint256 _nextBlockNumber = nextBlockNumber();
+        uint256 _nextOutputIndex = nextOutputIndex();
 
-        if (_exists(nextBlockNumber())) {
-            return getProposerAccount(_nextBlockNumber);
+        if (_exists(_nextOutputIndex)) {
+            return getProposerAccount(_nextOutputIndex);
         } else {
             return address(0);
         }
@@ -347,6 +339,6 @@ contract L2OutputOracle is Initializable, ERC721, LinearVRGDA, Semver {
 
     // idea: use library from erc6551
     function getProposerAccount(uint256 _l2BlockNumber) public view returns (address) {
-        return AccountLib.computeAddress(ERC6551_REGISTRY, PROPOSER_ACCOUNT_IMPL, CHAIN_ID, address(this), _l2BlockNumber, 0);
+        return AccountLib.computeAddress(ERC6551_REGISTRY, PROPOSER_ACCOUNT_IMPL, block.chainid, address(this), _l2BlockNumber, 0);
     }
 }

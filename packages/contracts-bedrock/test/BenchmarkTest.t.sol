@@ -217,8 +217,13 @@ contract GasBenchMark_L2OutputOracle is L2OutputOracle_Initializer {
     function setUp() public override {
         super.setUp();
         nextBlockNumber = oracle.nextBlockNumber();
+
+        uint256 mintPrice = oracle.mintProposerPrice();
+        vm.prank(proposerMinter);
+        oracle.mintProposer{value:mintPrice}();
+
         warpToProposeTime(nextBlockNumber);
-        vm.startPrank(proposer);
+        vm.startPrank(oracle.PROPOSER());
     }
 
     function test_proposeL2Output_benchmark() external {

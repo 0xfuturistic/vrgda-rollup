@@ -316,12 +316,10 @@ contract Deploy is Deployer {
             _l2BlockTime: cfg.l2BlockTime(),
             _startingBlockNumber: cfg.l2OutputOracleStartingBlockNumber(),
             _startingTimestamp: cfg.l2OutputOracleStartingTimestamp(),
-            _proposer: cfg.l2OutputOracleProposer(),
             _challenger: cfg.l2OutputOracleChallenger(),
             _finalizationPeriodSeconds: cfg.finalizationPeriodSeconds(),
-             _erc6551Registry: cfg.erc6551Registry(),
-             _proposerAccountImpl: cfg.proposerAccountImpl(),
-            _chainId: block.chainid
+            _erc6551Registry: cfg.erc6551Registry(),
+            _proposerAccountImpl: cfg.proposerAccountImpl()
         });
 
         require(oracle.SUBMISSION_INTERVAL() == cfg.l2OutputOracleSubmissionInterval());
