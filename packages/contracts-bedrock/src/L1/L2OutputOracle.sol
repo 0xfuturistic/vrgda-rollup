@@ -10,7 +10,8 @@ import { Semver } from "../universal/Semver.sol";
 import { Types } from "../libraries/Types.sol";
 import {ERC6551AccountLib as AccountLib} from "tokenbound/lib/reference/src/lib/ERC6551AccountLib.sol";
 import { IAccount } from "account-abstraction/interfaces/IAccount.sol";
-import { UserOperation, UserOperationLib } from "account-abstraction/interfaces/UserOperation.sol";
+import { UserOperation } from "account-abstraction/interfaces/UserOperation.sol";
+import { UserOperationLib } from "../libraries/UserOperation.sol";
 
 /// @custom:proxied
 /// @title L2OutputOracle
@@ -366,6 +367,6 @@ contract L2OutputOracle is Initializable, ERC721, LinearVRGDA, Semver {
     }
 
     function validateProposerOp(address proposer, UserOperation memory proposerOp) public returns (uint256 validationData) {
-        validationData = IAccount(proposer).validateUserOp(proposerOp, keccak256(abi.encode(proposerOp)), 0); // TODO: proper hash like in UserOperationLib
+        validationData = IAccount(proposer).validateUserOp(proposerOp, proposerOp.hash(), 0);
     }
 }
