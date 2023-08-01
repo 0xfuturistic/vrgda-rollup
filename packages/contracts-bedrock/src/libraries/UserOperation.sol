@@ -4,6 +4,7 @@ import { UserOperation } from "account-abstraction/interfaces/UserOperation.sol"
 
 /**
  * Utility functions helpful when working with UserOperation structs.
+   Forked from account-abstraction (https://github.com/eth-infinitism/account-abstraction/blob/develop/contracts/interfaces/UserOperation.sol).
  */
 library UserOperationLib {
     function getSender(UserOperation memory userOp) internal pure returns (address) {
