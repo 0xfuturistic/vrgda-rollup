@@ -25,6 +25,7 @@ import { Constants } from "../src/libraries/Constants.sol";
 import { DisputeGameFactory } from "../src/dispute/DisputeGameFactory.sol";
 import { FaultDisputeGame } from "../src/dispute/FaultDisputeGame.sol";
 import { L1ERC721Bridge } from "../src/L1/L1ERC721Bridge.sol";
+import { ProposerAccountImpl } from "../src/periphery/ProposerAccountImpl.sol";
 import { Predeploys } from "../src/libraries/Predeploys.sol";
 
 import { IBigStepper } from "../src/dispute/interfaces/IBigStepper.sol";
@@ -79,6 +80,8 @@ contract Deploy is Deployer {
         deployL1StandardBridge();
         deployL1ERC721Bridge();
         deployDisputeGameFactory();
+
+        deployProposerAccountImpl();
 
         transferAddressManagerOwnership();
 
@@ -315,7 +318,10 @@ contract Deploy is Deployer {
             _startingTimestamp: cfg.l2OutputOracleStartingTimestamp(),
             _proposer: cfg.l2OutputOracleProposer(),
             _challenger: cfg.l2OutputOracleChallenger(),
-            _finalizationPeriodSeconds: cfg.finalizationPeriodSeconds()
+            _finalizationPeriodSeconds: cfg.finalizationPeriodSeconds(),
+             _erc6551Registry: cfg.erc6551Registry(),
+             _proposerAccountImpl: cfg.proposerAccountImpl(),
+            _chainId: block.chainid
         });
 
         require(oracle.SUBMISSION_INTERVAL() == cfg.l2OutputOracleSubmissionInterval());
@@ -425,6 +431,19 @@ contract Deploy is Deployer {
         console.log("L1ERC721Bridge deployed at %s", address(bridge));
 
         return address(bridge);
+    }
+
+    /// @notice Deploy the ProposerAccountImpl
+    function deployProposerAccountImpl() broadcast() public returns (address) {
+        ProposerAccountImpl proposerAccountImpl = new ProposerAccountImpl({
+            _guardian: msg.sender,
+            entryPoint_: msg.sender
+        });
+
+        save("ProposerAccountImpl", address(proposerAccountImpl));
+        console.log("ProposerAccountImpl deployed at %s", address(proposerAccountImpl));
+
+        return address(proposerAccountImpl);
     }
 
     /// @notice Transfer ownership of the address manager to the ProxyAdmin

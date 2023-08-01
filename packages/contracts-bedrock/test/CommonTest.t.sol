@@ -161,7 +161,10 @@ contract L2OutputOracle_Initializer is CommonTest {
             _startingTimestamp: startingTimestamp,
             _proposer: proposer,
             _challenger: owner,
-            _finalizationPeriodSeconds: 7 days
+            _finalizationPeriodSeconds: 7 days,
+            _erc6551Registry: address(0),
+            _proposerAccountImpl: address(0),
+            _chainId: block.chainid
         });
         Proxy proxy = new Proxy(multisig);
         vm.prank(multisig);
