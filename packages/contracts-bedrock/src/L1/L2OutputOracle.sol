@@ -338,7 +338,7 @@ contract L2OutputOracle is Initializable, ERC721, LinearVRGDA, Semver {
     /// @notice Mints a token to the caller, which grants ownership over the rights to propose
     ///         the block with _l2BlockNumber.
     /// @return mintedId block number of the proposed block.
-    function mintProposer() external payable returns (uint256 mintedId) {
+    function mint() external payable returns (uint256 mintedId) {
         unchecked {
             // Note: By using toDaysWadUnsafe(block.timestamp - startTime) we are establishing that 1 "unit of time" is 1 day.
             uint256 price = getVRGDAPrice(toDaysWadUnsafe(block.timestamp - startingTimestamp), mintedId = totalSold++);
