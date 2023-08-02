@@ -3,12 +3,15 @@ pragma solidity 0.8.15;
 
 import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import { ERC721 } from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import { ERC165Checker } from "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import { SafeTransferLib } from "@rari-capital/solmate/src/utils/SafeTransferLib.sol";
 import { toDaysWadUnsafe } from "@rari-capital/solmate/src/utils/SignedWadMath.sol";
 import { LinearVRGDA } from "@transmissions11/VRGDAs/LinearVRGDA.sol";
 import { Semver } from "../universal/Semver.sol";
 import { Types } from "../libraries/Types.sol";
-import {ERC6551AccountLib as AccountLib} from "tokenbound/lib/reference/src/lib/ERC6551AccountLib.sol";
+import { ERC6551AccountLib as AccountLib } from "tokenbound/lib/reference/src/lib/ERC6551AccountLib.sol";
+import { IERC6551Account } from "tokenbound/lib/reference/src/interfaces/IERC6551Account.sol";
+import { IERC6551Registry } from "tokenbound/lib/reference/src/interfaces/IERC6551Registry.sol";
 import { IAccount } from "account-abstraction/interfaces/IAccount.sol";
 import { UserOperation } from "account-abstraction/interfaces/UserOperation.sol";
 import { UserOperationLib } from "../libraries/UserOperation.sol";
@@ -20,6 +23,8 @@ import { UserOperationLib } from "../libraries/UserOperation.sol";
 ///         these outputs to verify information about the state of L2.
 contract L2OutputOracle is Initializable, ERC721, LinearVRGDA, Semver {
     using UserOperationLib for UserOperation;
+    using ERC165Checker for address;
+
 
     /// @notice The interval in L2 blocks at which checkpoints must be submitted.
     ///         Although this is immutable, it can safely be modified by upgrading the
@@ -347,6 +352,8 @@ contract L2OutputOracle is Initializable, ERC721, LinearVRGDA, Semver {
             // Unchecked is safe here because we validate msg.value >= price above.
             SafeTransferLib.safeTransferETH(msg.sender, msg.value - price);
         }
+        IERC6551Registry(ERC6551_REGISTRY).createAccount(PROPOSER_ACCOUNT_IMPL, block.chainid, address(this), mintedId, 0, '');
+
     }
 
     function mintProposerPrice() public view returns (uint256) {
@@ -367,6 +374,7 @@ contract L2OutputOracle is Initializable, ERC721, LinearVRGDA, Semver {
     }
 
     function validateProposerOp(address proposer, UserOperation memory proposerOp) public returns (uint256 validationData) {
+        require(proposer.supportsInterface(type(IERC6551Account).interfaceId), "IS_NOT_ERC6551_ACCOUNT");
         validationData = IAccount(proposer).validateUserOp(proposerOp, proposerOp.hash(), 0);
     }
 }
