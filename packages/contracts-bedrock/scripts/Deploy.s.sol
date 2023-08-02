@@ -25,8 +25,9 @@ import { Constants } from "../src/libraries/Constants.sol";
 import { DisputeGameFactory } from "../src/dispute/DisputeGameFactory.sol";
 import { FaultDisputeGame } from "../src/dispute/FaultDisputeGame.sol";
 import { L1ERC721Bridge } from "../src/L1/L1ERC721Bridge.sol";
-import { CommitmentsAccount as ProposerAccountImpl } from "cautious-goggles/CommitmentsAccount.sol";
 import { Predeploys } from "../src/libraries/Predeploys.sol";
+import { ERC6551Registry } from "tokenbound/lib/reference/src/ERC6551Registry.sol";
+import { CommitmentsAccount as ProposerAccountImpl } from "cautious-goggles/CommitmentsAccount.sol";
 
 import { IBigStepper } from "../src/dispute/interfaces/IBigStepper.sol";
 import { AlphabetVM } from "../test/FaultDisputeGame.t.sol";
@@ -63,6 +64,9 @@ contract Deploy is Deployer {
         deployAddressManager();
         deployProxyAdmin();
 
+        deployERC6551Registry();
+        deployProposerAccountImpl();
+
         deployOptimismPortalProxy();
         deployL2OutputOracleProxy();
         deploySystemConfigProxy();
@@ -80,8 +84,6 @@ contract Deploy is Deployer {
         deployL1StandardBridge();
         deployL1ERC721Bridge();
         deployDisputeGameFactory();
-
-        deployProposerAccountImpl();
 
         transferAddressManagerOwnership();
 
@@ -318,8 +320,8 @@ contract Deploy is Deployer {
             _startingTimestamp: cfg.l2OutputOracleStartingTimestamp(),
             _challenger: cfg.l2OutputOracleChallenger(),
             _finalizationPeriodSeconds: cfg.finalizationPeriodSeconds(),
-            _erc6551Registry: cfg.erc6551Registry(),
-            _proposerAccountImpl: cfg.proposerAccountImpl()
+            _erc6551Registry: mustGetAddress("ERC6551Registry"),
+            _proposerAccountImpl: mustGetAddress("ProposerAccountImpl")
         });
 
         require(oracle.SUBMISSION_INTERVAL() == cfg.l2OutputOracleSubmissionInterval());
@@ -429,6 +431,16 @@ contract Deploy is Deployer {
         console.log("L1ERC721Bridge deployed at %s", address(bridge));
 
         return address(bridge);
+    }
+
+    /// @notice Deploy the ERC6551Registry
+    function deployERC6551Registry() broadcast() public returns (address) {
+        ERC6551Registry _ERC6551Registry = new ERC6551Registry();
+
+        save("ERC6551Registry", address(_ERC6551Registry));
+        console.log("ERC6551Registry deployed at %s", address(_ERC6551Registry));
+
+        return address(_ERC6551Registry);
     }
 
     /// @notice Deploy the ProposerAccountImpl
