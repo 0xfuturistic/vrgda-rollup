@@ -3,7 +3,7 @@ pragma solidity 0.8.15;
 
 // Testing utilities
 import { stdError } from "forge-std/Test.sol";
-import { L2OutputOracle_Initializer, NextImpl } from "./CommonTest.t.sol";
+import { L2OutputOracle_Initializer, NextImpl} from "./CommonTest.t.sol";
 
 // Libraries
 import { Types } from "../src/libraries/Types.sol";
@@ -36,8 +36,8 @@ contract L2OutputOracle_constructor_Test is L2OutputOracle_Initializer {
             _startingTimestamp: block.timestamp + 1,
             _challenger: owner,
             _finalizationPeriodSeconds: 7 days,
-            _erc6551Registry: 0x02101dfB77FDE026414827Fdc604ddAF224F0921,
-            _proposerAccountImpl: 0x2D25602551487C3f3354dD80D76D54383A243358
+            _erc6551Registry: address(erc6551Registry),
+            _proposerAccountImpl: address(proposerAccountImpl)
         });
     }
 
@@ -51,8 +51,8 @@ contract L2OutputOracle_constructor_Test is L2OutputOracle_Initializer {
             _startingTimestamp: block.timestamp,
             _challenger: owner,
             _finalizationPeriodSeconds: 7 days,
-            _erc6551Registry: 0x02101dfB77FDE026414827Fdc604ddAF224F0921,
-            _proposerAccountImpl: 0x2D25602551487C3f3354dD80D76D54383A243358
+            _erc6551Registry: address(erc6551Registry),
+            _proposerAccountImpl: address(proposerAccountImpl)
         });
     }
 
@@ -66,8 +66,8 @@ contract L2OutputOracle_constructor_Test is L2OutputOracle_Initializer {
             _startingTimestamp: block.timestamp,
             _challenger: owner,
             _finalizationPeriodSeconds: 7 days,
-            _erc6551Registry: 0x02101dfB77FDE026414827Fdc604ddAF224F0921,
-            _proposerAccountImpl: 0x2D25602551487C3f3354dD80D76D54383A243358
+            _erc6551Registry: address(erc6551Registry),
+            _proposerAccountImpl: address(proposerAccountImpl)
         });
     }
 }

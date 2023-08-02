@@ -33,6 +33,8 @@ import { LegacyMintableERC20 } from "../src/legacy/LegacyMintableERC20.sol";
 import { SystemConfig } from "../src/L1/SystemConfig.sol";
 import { ResourceMetering } from "../src/L1/ResourceMetering.sol";
 import { Constants } from "../src/libraries/Constants.sol";
+import { ERC6551Registry } from "tokenbound/lib/reference/src/ERC6551Registry.sol";
+import { CommitmentsAccount as ProposerAccountImpl } from "cautious-goggles/CommitmentsAccount.sol";
 
 contract CommonTest is Test {
     address alice = address(128);
@@ -107,6 +109,9 @@ contract L2OutputOracle_Initializer is CommonTest {
     uint256 internal startingTimestamp = 1000;
     address guardian;
 
+    ERC6551Registry internal erc6551Registry;
+    ProposerAccountImpl internal proposerAccountImpl;
+
     // Test data
     uint256 initL1Time;
 
@@ -158,6 +163,11 @@ contract L2OutputOracle_Initializer is CommonTest {
         initL1Time = startingTimestamp + 1;
         vm.warp(initL1Time);
         vm.roll(startingBlockNumber);
+        // Deploy ERC6551Registry
+        erc6551Registry = new ERC6551Registry();
+        // Deploy ProposerAccountImpl
+        proposerAccountImpl = new ProposerAccountImpl(owner, owner);
+
         // Deploy the L2OutputOracle and transfer owernship to the proposer
         oracleImpl = new L2OutputOracle({
             _submissionInterval: submissionInterval,
@@ -166,8 +176,8 @@ contract L2OutputOracle_Initializer is CommonTest {
             _startingTimestamp: startingTimestamp,
             _challenger: owner,
             _finalizationPeriodSeconds: 7 days,
-            _erc6551Registry: 0x02101dfB77FDE026414827Fdc604ddAF224F0921,
-            _proposerAccountImpl: 0x2D25602551487C3f3354dD80D76D54383A243358
+            _erc6551Registry: address(erc6551Registry),
+            _proposerAccountImpl: address(proposerAccountImpl)
         });
         Proxy proxy = new Proxy(multisig);
         vm.prank(multisig);
