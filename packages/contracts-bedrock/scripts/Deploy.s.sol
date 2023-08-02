@@ -435,12 +435,18 @@ contract Deploy is Deployer {
 
     /// @notice Deploy the ERC6551Registry
     function deployERC6551Registry() broadcast() public returns (address) {
-        ERC6551Registry _ERC6551Registry = new ERC6551Registry();
+        address registry;
+        if (block.chainid == 1 || block.chainid == 5) {
+            console.log("ERC6551Registry already deployed at %s", address(registry));
+            registry = 0x02101dfB77FDE026414827Fdc604ddAF224F0921;
+        } else {
+            ERC6551Registry deploy = new ERC6551Registry();
+            console.log("ERC6551Registry deployed at %s", address(registry));
+            registry = address(deploy);
+        }
+        save("ERC6551Registry", address(registry));
 
-        save("ERC6551Registry", address(_ERC6551Registry));
-        console.log("ERC6551Registry deployed at %s", address(_ERC6551Registry));
-
-        return address(_ERC6551Registry);
+        return address(registry);
     }
 
     /// @notice Deploy the ProposerAccountImpl
