@@ -36,5 +36,6 @@
   "l2GenesisBlockGasLimit": "0x17D7840",
   "l2GenesisBlockBaseFeePerGas": "0x3b9aca00",
   "eip1559Denominator": 50,
-  "eip1559Elasticity": 10
+  "eip1559Elasticity": 10,
+  "erc6551Registry": "0x02101dfB77FDE026414827Fdc604ddAF224F0921"
 }
